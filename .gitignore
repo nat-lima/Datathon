@@ -1,5 +1,6 @@
 # Ignorar ambiente virtual
 venv/
+.env
 
 # Ignorar cache do Python
 __pycache__/
@@ -8,6 +9,9 @@ __pycache__/
 
 # Ignorar notebooks específicos
 tests.ipynb
+
+app/agente.py
+
 app/lstm_example.py
 app/lstm sem scaler.ipynb
 app/prever_api.py

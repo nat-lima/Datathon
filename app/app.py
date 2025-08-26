@@ -9,8 +9,29 @@ from datetime import timedelta
 import zipfile
 import sqlite3
 import json
+import ast
+import re
 
 app = Flask(__name__)
+
+# Função para extrair múltiplos dicionários da string prospects
+def parse_prospects_string(prospects_str):
+    candidatos = []
+    if not prospects_str or not isinstance(prospects_str, str):
+        return candidatos
+
+    # Regex para capturar cada dicionário individual
+    pattern = r"\{[^{}]+\}"
+    matches = re.findall(pattern, prospects_str)
+
+    for match in matches:
+        try:
+            candidato = ast.literal_eval(match)
+            if isinstance(candidato, dict):
+                candidatos.append(candidato)
+        except Exception as e:
+            print(f"Erro ao interpretar bloco: {e}")
+    return candidatos
 
 # @app.route('/formulario')
 # def formulario():
@@ -61,8 +82,30 @@ def processar_todos_zips():
 
                         df = None  # Inicializa o DataFrame
 
-                        # Estrutura tipo candidatos: dict com subdicts
-                        if isinstance(dados, dict) and all(isinstance(v, dict) for v in dados.values()):
+                        # Estrutura tabular: lista de dicts
+                        if isinstance(dados, list) and all(isinstance(item, dict) for item in dados):
+                            registros = []
+                            for item in dados:
+                                novo_registro = {}
+                                for k, v in item.items():
+                                    if k == "prospects":
+                                        candidatos = parse_prospects_string(v)
+                                        agrupado = {}
+                                        for campo in ["nome", "codigo", "situacao_candidado", "data_candidatura", "ultima_atualizacao", "comentario", "recrutador"]:
+                                            valores = [str(c.get(campo, "")).strip() for c in candidatos]
+                                            agrupado[f"{campo}_applicant"] = ", ".join(valores)
+                                        novo_registro.update(agrupado)
+
+                                    elif isinstance(v, list):
+                                        novo_registro[k] = ', '.join(map(str, v))
+                                    else:
+                                        novo_registro[k] = v
+                                registros.append(novo_registro)
+                            df = pd.DataFrame(registros)
+
+
+                        # Estrutura tipo dict com subdicts
+                        elif isinstance(dados, dict) and all(isinstance(v, dict) for v in dados.values()):
                             registros = []
                             for codigo, info in dados.items():
                                 registro = {"codigo": codigo}
@@ -79,23 +122,28 @@ def processar_todos_zips():
                                 registros.append(registro)
                             df = pd.DataFrame(registros)
 
-                        # Estrutura tabular: lista de dicts
-                        elif isinstance(dados, list) and all(isinstance(item, dict) for item in dados):
-                            for item in dados:
-                                for k, v in item.items():
-                                    if isinstance(v, list):
-                                        item[k] = ', '.join(map(str, v))
-                            df = pd.DataFrame(dados)
-
-                        # Estrutura com lista interna (ex: {"dados": [...]})
+                        # Estrutura tipo dict com lista interna
                         elif isinstance(dados, dict):
                             for chave, valor in dados.items():
                                 if isinstance(valor, list) and all(isinstance(item, dict) for item in valor):
+                                    registros = []
                                     for item in valor:
+                                        novo_registro = {}
                                         for k, v in item.items():
-                                            if isinstance(v, list):
-                                                item[k] = ', '.join(map(str, v))
-                                    df = pd.DataFrame(valor)
+                                            if k == "prospects":
+                                                candidatos = parse_prospects_string(v)
+                                                agrupado = {}
+                                                for campo in ["nome", "codigo", "situacao_candidado", "data_candidatura", "ultima_atualizacao", "comentario", "recrutador"]:
+                                                    valores = [str(c.get(campo, "")).strip() for c in candidatos]
+                                                    agrupado[f"{campo}_applicant"] = ", ".join(valores)
+                                                novo_registro.update(agrupado)
+
+                                            elif isinstance(v, list):
+                                                novo_registro[k] = ', '.join(map(str, v))
+                                            else:
+                                                novo_registro[k] = v
+                                        registros.append(novo_registro)
+                                    df = pd.DataFrame(registros)
                                     break
 
                         if df is not None:
