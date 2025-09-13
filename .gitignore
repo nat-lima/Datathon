@@ -6,25 +6,18 @@ venv/
 __pycache__/
 *.pyc
 
+# Ignorar testes
+app/tests
 
 # Ignorar notebooks específicos
-tests.ipynb
 
-app/agente.py
-
-app/lstm_example.py
-app/lstm sem scaler.ipynb
-app/prever_api.py
-data/json_entrada.json
-api/index.py
-app/lstm_versao_normalizada.ipynb
-app/test.py
-app/test.ipynb
-app/data/get_data.ipynb
+# Ainda incompletos
 app/templates/
-app/utils/
+
 app/.dockerignore
 app/Dockerfile
+
+# Dados que excedem limite github
 app/dados/
 app/data/extraidos/applicants.json
 app/data/extraidos/prospects.json
