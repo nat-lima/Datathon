@@ -240,7 +240,7 @@ def avaliar_entrevista():
         mlflow.log_param("resultado", resultado)
         mlflow.log_param("competencias", competencias_full)
         mlflow.log_metric("compatibilidade_tecnica", score)
-        mlflow.log_metric("compatibilidade_tecnica_emb", score_emb)
+        mlflow.log_metric("compatibilidade_tecnica_detalhada", score_emb)
         mlflow.log_text("\n".join(perguntas), "perguntas_geradas.txt")
         mlflow.log_text("\n".join([f"Q: {q}\nA: {r}" for q, r in zip(perguntas, respostas)]), "respostas_candidato.txt")
         mlflow.log_text(respostas_texto, "respostas_processadas.txt")

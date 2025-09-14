@@ -19,28 +19,31 @@ Esta API em Flask processa arquivos ZIP contendo dados de candidatos e vagas, ar
 
 DATATHON/
 |    └── app
-|        ├── data/
-|        │   ├── extraidos
-|        │   │   ├── applicants.json
-|        │   │   ├── dados.db
-|        │   │   ├── prospects.json
-|        │   │   └── vagas.json
-|        │   └── EDA dados db.ipynb
-|        ├── utils/
-|        │   ├── __init__.py
-|        │   ├── calcular_compatibilidade_emb.py
-|        │   ├── calcular_compatibilidade.py
-|        │   ├── flatten_json.py
-|        │   ├── gerar_perguntas_para_vaga.py
-|        │   └── montar_df_entrevista.py
-|        ├──.env
-|        ├── app.py
-|        ├── docker-compose.yml
-|        ├── Docekrfile
-|        ├── mlruns_analysis.ipynb
-|        ├── requirements.txt
-|
-└── .env
+|    |   ├── data/
+|    |   │   ├── extraidos
+|    |   │   │   ├── applicants.json
+|    |   │   │   ├── dados.db
+|    |   │   │   ├── prospects.json
+|    |   │   │   └── vagas.json
+|    |   │   └── EDA dados db.ipynb
+|    |   ├── utils/
+|    |   │   ├── __init__.py
+|    |   │   ├── calcular_compatibilidade_emb.py
+|    |   │   ├── calcular_compatibilidade.py
+|    |   │   ├── flatten_json.py
+|    |   │   ├── gerar_perguntas_para_vaga.py
+|    |   │   └── montar_df_entrevista.py
+|    |   ├──.dockerignore
+|    |   ├──.env
+|    |   ├── app.py
+|    |   ├── docker-compose.yml
+|    |   ├── Docekrfile
+|    |   ├── mlruns_analysis.ipynb
+|    |   ├── requirements.txt
+|    └── mlruns/
+|    └── .gitignore
+|    └── README.md
+
 
 ---
 
@@ -65,10 +68,11 @@ COPY . .
 RUN pip install --upgrade pip && pip install --no-cache-dir -r requirements.txt
 EXPOSE 5000
 CMD ["python", "app.py"]
+```
 
-### 2. `Docker=compose.yml`
-Yaml
+### 2. `Docker-compose.yml`
 
+```Yaml
 version: '3.10'
 
 services:
@@ -82,10 +86,13 @@ services:
     env_file:
       - .env
     command: python app.py
+```
 
-### 3. `Rodar o projoto`
+### 3. `Rodar o projeto`
 
 docker-compose up --build
+
+Certificar que está rodando dentro do diretório \app.
 
 ---
 
@@ -208,6 +215,7 @@ Resposta:
   "titulo_vaga": "Analista de Sistemas",
   "resultado": "APTO",
   "score_compatibilidade": 82.5,
+  "score_compatibilidade_detalhada": 70,
   "requisitos_mais_compatíveis": ["comunicação eficaz", "trabalho em equipe"],
   "requisitos_menos_compatíveis": ["experiência com AWS"]
 }
@@ -221,7 +229,6 @@ Ela retorna:
 - ✅ Score médio de compatibilidade
 - ✅ Lista de requisitos mais compatíveis
 - ✅ Lista de requisitos menos compatíveis
-
 
 
 🧪 Testando no Postman

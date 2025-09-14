@@ -1,6 +1,7 @@
 # Ignorar ambiente virtual
 venv/
 .env
+venv312/
 
 # Ignorar cache do Python
 __pycache__/
@@ -14,8 +15,6 @@ app/tests
 # Ainda incompletos
 app/templates/
 
-app/.dockerignore
-app/Dockerfile
 
 # Dados que excedem limite github
 app/dados/
