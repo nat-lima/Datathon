@@ -2,7 +2,6 @@ from flask import Flask, jsonify, request, render_template
 from pathlib import Path
 from os.path import join, basename, splitext
 import pandas as pd
-import numpy as np
 import os
 from datetime import timedelta, datetime
 import zipfile
@@ -18,6 +17,7 @@ from dotenv import load_dotenv
 
 from utils.montar_df_entrevista import montar_df_entrevista
 from utils.calcular_compatibilidade import calcular_compatibilidade
+from utils.calcular_compatibilidade_emb import calcular_compatibilidade_emb
 from utils.gerar_perguntas_para_vaga import gerar_perguntas_para_vaga
 from utils.flatten_json import flatten_json
 
@@ -219,9 +219,18 @@ def avaliar_entrevista():
     comp_comp = linha.get("perfil_vaga_habilidades_comportamentais_necessarias", "")
     competencias_full = f"{requisitos}\n{comp_comp}".strip()
     experiencia = linha.get("informacoes_profissionais_conhecimentos_tecnicos", "")
+    respostas_texto = "\n".join(respostas)
+    cv_resumo = linha.get("cv_pt", "")
+    experiencia_completa = f"{experiencia}\n{cv_resumo}\n{respostas_texto}".strip()
 
-    score = calcular_compatibilidade(requisitos, experiencia)
-    resultado = "APTO" if score >= 60 else "NÃO APTO"
+    score = calcular_compatibilidade(requisitos, experiencia_completa)
+
+    resultado_detalhado = calcular_compatibilidade_emb(requisitos, experiencia_completa)
+    score_emb = resultado_detalhado["score"]
+    mais_compativeis = resultado_detalhado["mais_compativeis"]
+    menos_compativeis = resultado_detalhado["menos_compativeis"]
+
+    resultado = "APTO" if score > 50 and score_emb > 50 else "NÃO APTO"
 
     with mlflow.start_run(run_name=f"Entrevista_{nome}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"):
         mlflow.log_param("nome", nome)
@@ -231,15 +240,21 @@ def avaliar_entrevista():
         mlflow.log_param("resultado", resultado)
         mlflow.log_param("competencias", competencias_full)
         mlflow.log_metric("compatibilidade_tecnica", score)
+        mlflow.log_metric("compatibilidade_tecnica_emb", score_emb)
         mlflow.log_text("\n".join(perguntas), "perguntas_geradas.txt")
         mlflow.log_text("\n".join([f"Q: {q}\nA: {r}" for q, r in zip(perguntas, respostas)]), "respostas_candidato.txt")
+        mlflow.log_text(respostas_texto, "respostas_processadas.txt")
+        mlflow.log_text(cv_resumo, "cv_resumo.txt")
 
     return jsonify({
         "status": "ok",
         "nome": nome,
         "titulo_vaga": titulo_vaga,
         "resultado": resultado,
-        "score_compatibilidade": score
+        "score_compatibilidade": score,
+        "score_compatibilidade_detalhada": score_emb,
+        "requisitos_mais_compatíveis": mais_compativeis,
+        "requisitos_menos_compatíveis": menos_compativeis
     })
 
 
