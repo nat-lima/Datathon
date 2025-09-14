@@ -10,7 +10,8 @@ Esta API em Flask processa arquivos ZIP contendo dados de candidatos e vagas, ar
 - **Consultar tabelas** do banco SQLite.
 - **Iniciar entrevista** a partir do e-mail do candidato.
 - **Gerar perguntas** para uma vaga específica.
-- **Avaliar entrevista** com cálculo de compatibilidade e registro no MLflow.
+- **Avaliar entrevista** com cálculo de compatibilidade semântica e registro no MLflow.
+- **Rodar via Docker Compose** com ambiente isolado e replicável.
 
 ---
 
@@ -19,22 +20,27 @@ Esta API em Flask processa arquivos ZIP contendo dados de candidatos e vagas, ar
 DATATHON/
 |    └── app
 |        ├── data/
-|        │   └── extraidos
-|        │       ├── applicants.json
-|        │       ├── dados.db
-|        │       ├── prospects.json
-|        │       └── vagas.json
+|        │   ├── extraidos
+|        │   │   ├── applicants.json
+|        │   │   ├── dados.db
+|        │   │   ├── prospects.json
+|        │   │   └── vagas.json
+|        │   └── EDA dados db.ipynb
 |        ├── utils/
 |        │   ├── __init__.py
+|        │   ├── calcular_compatibilidade_emb.py
 |        │   ├── calcular_compatibilidade.py
 |        │   ├── flatten_json.py
 |        │   ├── gerar_perguntas_para_vaga.py
 |        │   └── montar_df_entrevista.py
 |        ├──.env
 |        ├── app.py
+|        ├── docker-compose.yml
+|        ├── Docekrfile
+|        ├── mlruns_analysis.ipynb
+|        ├── requirements.txt
 |
 └── .env
-
 
 ---
 
@@ -43,6 +49,43 @@ DATATHON/
 - Python 3.9+
 - Conta e chave de API da OpenAI
 - MLflow instalado
+
+---
+
+## 🐳 Docker Compose
+
+Para rodar o projeto com Docker:
+
+### 1. `Dockerfile`
+
+```Dockerfile
+FROM python:3.11-slim
+WORKDIR /app
+COPY . .
+RUN pip install --upgrade pip && pip install --no-cache-dir -r requirements.txt
+EXPOSE 5000
+CMD ["python", "app.py"]
+
+### 2. `Docker=compose.yml`
+Yaml
+
+version: '3.10'
+
+services:
+  web:
+    build: .
+    ports:
+      - "5000:5000"
+    volumes:
+      - .:/app
+    working_dir: /app
+    env_file:
+      - .env
+    command: python app.py
+
+### 3. `Rodar o projoto`
+
+docker-compose up --build
 
 ---
 
@@ -126,7 +169,6 @@ Resposta:
 }
 
 
-
 4️⃣ POST /gerar-perguntas
 Gera perguntas para uma vaga específica.
 Body:
@@ -165,8 +207,20 @@ Resposta:
   "nome": "Fulano",
   "titulo_vaga": "Analista de Sistemas",
   "resultado": "APTO",
-  "score_compatibilidade": 80.0
+  "score_compatibilidade": 82.5,
+  "requisitos_mais_compatíveis": ["comunicação eficaz", "trabalho em equipe"],
+  "requisitos_menos_compatíveis": ["experiência com AWS"]
 }
+
+Compatibilidade semântica com embeddings
+A função calcular_compatibilidade_detalhada usa sentence-transformers para comparar requisitos com:
+- Experiência técnica
+- Respostas às perguntas
+- Resumo do currículo (cv_pt)
+Ela retorna:
+- ✅ Score médio de compatibilidade
+- ✅ Lista de requisitos mais compatíveis
+- ✅ Lista de requisitos menos compatíveis
 
 
 
