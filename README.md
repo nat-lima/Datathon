@@ -17,6 +17,8 @@ Esta API em Flask processa arquivos ZIP contendo dados de candidatos e vagas, ar
 
 ## 📂 Estrutura de Pastas
 
+```bash
+
 DATATHON/
 |    └── app
 |    |   ├── data/
@@ -44,6 +46,7 @@ DATATHON/
 |    └── .gitignore
 |    └── README.md
 
+```
 
 ---
 
