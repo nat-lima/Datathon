@@ -2,13 +2,14 @@
 venv/
 .env
 venv312/
+.venv/
 
 # Ignorar cache do Python
 __pycache__/
 *.pyc
 
 # Ignorar testes
-app/tests
+app/tests_nb
 
 # Ignorar notebooks específicos
 
