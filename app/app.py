@@ -9,7 +9,6 @@ import sqlite3
 import json
 
 import mlflow
-
 from langchain_openai import ChatOpenAI
 from langchain.prompts import ChatPromptTemplate
 from langchain.chains import LLMChain
@@ -19,16 +18,12 @@ from utils.montar_df_entrevista import montar_df_entrevista
 from utils.calcular_compatibilidade import calcular_compatibilidade
 from utils.calcular_compatibilidade_emb import calcular_compatibilidade_emb
 from utils.gerar_perguntas_para_vaga import gerar_perguntas_para_vaga
-from utils.flatten_json import flatten_json
+from utils.etl_zip import validar_pasta, extrair_zip, processar_json
 
 load_dotenv()
 api_key = os.getenv("OPENAI_API_KEY")
 
 app = Flask(__name__)
-
-# @app.route('/formulario')
-# def formulario():
-#     return render_template('formulario.html')
 
 @app.route('/', methods=['GET'])
 def home():
@@ -41,13 +36,10 @@ def processar_todos_zips():
     destino = data.get('destino')
     db_path = data.get('db_path', 'dados.db')
 
-    if not pasta_zips or not os.path.isdir(pasta_zips):
+    if not validar_pasta(pasta_zips):
         return jsonify({'erro': 'Pasta de ZIPs inválida ou inexistente.'}), 400
 
-    if not destino:
-        destino = os.path.join(pasta_zips, "extraidos")
     os.makedirs(destino, exist_ok=True)
-
     conn = sqlite3.connect(db_path)
     tabelas_criadas = []
     arquivos_processados = []
@@ -55,71 +47,22 @@ def processar_todos_zips():
     for nome_arquivo in os.listdir(pasta_zips):
         if nome_arquivo.endswith(".zip"):
             zip_path = os.path.join(pasta_zips, nome_arquivo)
-            try:
-                with zipfile.ZipFile(zip_path, 'r') as zip_ref:
-                    zip_ref.extractall(destino)
-                    arquivos_extraidos = zip_ref.namelist()
-                    arquivos_processados.append(nome_arquivo)
-            except zipfile.BadZipFile:
-                print(f"ZIP inválido: {nome_arquivo}")
-                continue
+            arquivos_extraidos = extrair_zip(zip_path, destino)
+            if arquivos_extraidos:
+                arquivos_processados.append(nome_arquivo)
 
             for arquivo in arquivos_extraidos:
                 if arquivo.endswith(".json"):
                     caminho_arquivo = os.path.join(destino, arquivo)
                     if os.path.isfile(caminho_arquivo):
-                        with open(caminho_arquivo, encoding='utf-8') as f:
-                            dados = json.load(f)
-
                         nome_tabela = splitext(basename(arquivo))[0]
-                        
-                        df = None  # Inicializa o DataFrame
-
-                        # Verificar se o arquivo existe
-                        if nome_tabela =='prospects':
-                            linhas = []
-
-                            # Iterar sobre todas as vagas
-                            for codigo_vaga, info_vaga in dados.items():
-                                vaga_info = {k: v for k, v in info_vaga.items() if k != "prospects"}
-                                vaga_info["codigo_vaga"] = codigo_vaga
-
-                                for prospect in info_vaga.get("prospects", []):
-                                    linha = vaga_info.copy()
-                                    for chave, valor in prospect.items():
-                                        if chave in ["data_candidatura", "ultima_atualizacao"]:
-                                            valor = valor.replace("-", "/")
-                                        linha[chave] = valor
-                                    linhas.append(linha)
-
-                            # Criar DataFrame
-                            df = pd.DataFrame(linhas)
-
-                            # Reordenar colunas (opcional)
-                            colunas_ordenadas = sorted(df.columns, key=lambda x: (x != "codigo_vaga", x))
-                            df = df[colunas_ordenadas]
-
-                        else:
-                            registros = []
-
-                            # Se for dict com múltiplos registros
-                            if isinstance(dados, dict):
-                                for codigo, conteudo in dados.items():
-                                    registro = flatten_json(conteudo)
-                                    registro = {"codigo": codigo, **registro}  # <- Aqui garantimos que o código venha primeiro
-                                    registros.append(registro)
-
-                            # Criar DataFrame
-                            df = pd.DataFrame(registros)
-                             
+                        df = processar_json(caminho_arquivo, nome_tabela)
                         if df is not None:
                             df.to_sql(nome_tabela, conn, if_exists='replace', index=False)
                             tabelas_criadas.append(nome_tabela)
                             print(f"Tabela '{nome_tabela}' salva com sucesso.")
                         else:
                             print(f"Estrutura não reconhecida em '{arquivo}', tabela não criada.")
-                    else:
-                        print(f"Arquivo '{arquivo}' não encontrado.")
 
     conn.close()
 
@@ -143,7 +86,6 @@ def consultar_tabela(tabela):
         return jsonify(df.to_dict(orient='records'))
     except Exception as e:
         return jsonify({'erro': f'Erro ao consultar a tabela: {str(e)}'}), 400
-
 
 @app.route("/iniciar-entrevista", methods=["POST"])
 def iniciar_entrevista():
@@ -257,6 +199,5 @@ def avaliar_entrevista():
         "requisitos_menos_compatíveis": menos_compativeis
     })
 
-
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True, use_reloader=False)

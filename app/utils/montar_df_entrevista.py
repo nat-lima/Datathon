@@ -1,14 +1,18 @@
 import sqlite3
 import pandas as pd
 from pathlib import Path
+import os
 
-caminho_db = Path.cwd() / "app" / "data" / "extraidos" / "dados.db"
+base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # sobe de utils para app
+db_path = os.path.join(base_dir, 'data', 'extraidos', 'dados.db')
 
 # Funções auxiliares
 def montar_df_entrevista(email_candidato):
     """Busca o candidato por e-mail e faz join com prospects e vagas."""
+    if not os.path.exists(db_path):
+        raise FileNotFoundError(f"Banco de dados não encontrado em: {db_path}")
 
-    conn = sqlite3.connect(caminho_db)
+    conn = sqlite3.connect(db_path)
     df_applicants = pd.read_sql_query(
         "SELECT * FROM applicants WHERE LOWER(infos_basicas_email) LIKE ?",
         conn, params=(email_candidato.lower(),)
