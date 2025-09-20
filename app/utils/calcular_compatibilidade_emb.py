@@ -22,8 +22,8 @@ def calcular_compatibilidade_emb(requisitos, experiencia_completa, limiar_alto=0
     compatibilidade = round(media_score * 100, 2)
 
     # Requisitos mais e menos compatíveis
-    mais_compativeis = [r for r, s in resultados if s >= limiar_alto]
-    menos_compativeis = [r for r, s in resultados if s <= limiar_baixo]
+    mais_compativeis = [r for r, s in resultados if s > limiar_alto]
+    menos_compativeis = [r for r, s in resultados if s < limiar_baixo]
 
     return {
         "score": compatibilidade,

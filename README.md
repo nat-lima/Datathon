@@ -22,6 +22,10 @@ Esta API em Flask processa arquivos ZIP contendo dados de candidatos e vagas, ar
 
 DATATHON/
 |    └── app
+|    |   ├── dados/
+|    |   │   ├── applicants.zip
+|    |   │   ├── prospects.zip
+|    |   │   └── vagas.zip
 |    |   ├── data/
 |    |   │   ├── extraidos
 |    |   │   │   ├── applicants.json
@@ -32,20 +36,22 @@ DATATHON/
 |    |   ├── frontend/
 |    |   │   └── front.py
 |    |   ├── monitoring/
-|    |   │   └── drift.ipynb
+|    |   │   └── drift_monitor.ipynb
 |    |   ├── utils/
 |    |   │   ├── __init__.py
 |    |   │   ├── calcular_compatibilidade_emb.py
-|    |   │   ├── calcular_compatibilidade.py
+|    |   │   ├── db_path.py
+|    |   │   ├── etl_zip.py
 |    |   │   ├── flatten_json.py
 |    |   │   ├── gerar_perguntas_para_vaga.py
-|    |   │   └── montar_df_entrevista.py
+|    |   │   ├── montar_df_entrevista.py
+|    |   │   └── semantic_engine.py
 |    |   ├──.dockerignore
 |    |   ├──.env
 |    |   ├── app.py
 |    |   ├── docker-compose.yml
 |    |   ├── Docekrfile
-|    |   ├── mlruns_analysis.ipynb
+|    |   ├── Docekrfile.streamlit
 |    |   ├── requirements.txt
 |    └── mlruns/
 |    └── .gitignore
