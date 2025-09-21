@@ -10,7 +10,7 @@ services:
     working_dir: /app
     env_file:
       - .env
-    command: python app/app.py
+    command: python app.py
     restart: always
 
   streamlit:  # Streamlit frontend
@@ -24,7 +24,7 @@ services:
     working_dir: /app
     environment:
       - API_URL=http://web:5000  # nome do serviço Flask
-    command: streamlit run app/frontend/front.py --server.port=8501 --server.address=0.0.0.0
+    command: streamlit run frontend/front.py --server.port=8501 --server.address=0.0.0.0
     depends_on:
       - web
     restart: always

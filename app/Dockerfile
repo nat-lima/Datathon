@@ -8,9 +8,9 @@ WORKDIR /app
 COPY requirements.txt .
 
 # Atualiza pip e instala dependências
-RUN time pip install --upgrade pip \
-    && time pip install --no-cache-dir -r requirements.txt
-
+RUN pip install --upgrade pip \
+    && pip install --no-cache-dir -r requirements.txt
+    
 # Agora copia o restante do código
 COPY . .
 
