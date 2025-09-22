@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 load_dotenv()
 API_URL = os.getenv("API_URL", "http://localhost:5000")
 
-st.title("Entrevista RH - Candidato")
+st.title("Decision - Entrevista Inicial com o Candidato")
 
 # Inicializar variáveis de estado
 if "email" not in st.session_state:
@@ -60,9 +60,8 @@ if st.session_state.fase == "escolha_vaga":
 if st.session_state.fase == "entrevista":
     dados = st.session_state.dados_vaga
     st.subheader(f"Entrevista para: {dados['titulo_vaga']}")
-    st.write(f"🎯 Objetivo da vaga: {dados['objetivo_vaga']}")
     st.write(f"🧠 Competências esperadas: {dados['competencias']}")
-    st.write(f"📄 Resumo da vaga: {dados['resumo']}")
+    st.write(f"📄 Resumo currículo: {dados['resumo']}")
 
     respostas = []
     for i, pergunta in enumerate(st.session_state.perguntas):
