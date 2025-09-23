@@ -37,7 +37,7 @@ def calcular_compatibilidade_emb(requisitos, experiencia_completa, limiar_alto=0
     media_score = sum(score for _, score in resultados) / len(resultados) if resultados else 0
     compatibilidade = round(media_score * 100, 2)
 
-    mais_compativeis = [r for r, s in resultados if s > limiar_alto]
+    mais_compativeis = [r for r, s in resultados if s >= limiar_alto]
     menos_compativeis = [r for r, s in resultados if s < limiar_baixo]
 
     return {

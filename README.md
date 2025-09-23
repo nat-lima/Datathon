@@ -293,14 +293,11 @@ Resposta:
   "nome": "Fulano",
   "titulo_vaga": "Analista de Sistemas",
   "resultado": "APTO",
-  "score_compatibilidade": 82.5,
-  "score_compatibilidade_detalhada": 70,
-  "requisitos_mais_compatíveis": ["comunicação eficaz", "trabalho em equipe"],
-  "requisitos_menos_compatíveis": ["experiência com AWS"]
+  "score_compatibilidade_semantica": 82.5,
 }
 
 Compatibilidade semântica com embeddings
-A função calcular_compatibilidade_detalhada usa sentence-transformers para comparar requisitos com:
+A função calcular_compatibilidade_emb usa sentence-transformers para comparar requisitos com:
 - Experiência técnica
 - Respostas às perguntas
 - Resumo do currículo (cv_pt)

@@ -15,7 +15,6 @@ from langchain.chains import LLMChain
 from dotenv import load_dotenv
 
 from utils.montar_df_entrevista import montar_df_entrevista
-from utils.semantic_engine import criar_vector_store, buscar_similaridade
 from utils.calcular_compatibilidade_emb import calcular_compatibilidade_emb
 from utils.gerar_perguntas_para_vaga import gerar_perguntas_para_vaga
 from utils.etl_zip import validar_pasta, extrair_zip, processar_json
@@ -171,24 +170,8 @@ def avaliar_entrevista():
     mais_compativeis = resultado_detalhado["mais_compativeis"]
     menos_compativeis = resultado_detalhado["menos_compativeis"]
 
-    # 2. Compatibilidade vetorial via FAISS
-    requisitos_texto = requisitos if requisitos else ""
-    comportamentais_texto = comp_comp if comp_comp else ""
-
-    requisitos_lista = [
-        r.strip()
-        for r in requisitos_texto.split("\n") + comportamentais_texto.split("\n")
-        if r.strip()]
-
-    vector_store = criar_vector_store(requisitos_lista)
-    resultados_vetoriais = buscar_similaridade(experiencia_completa, vector_store, k=5)
-
-    requisitos_vetoriais = [r.page_content for r in resultados_vetoriais if r.page_content not in menos_compativeis]
-
-    score_vetorial = round(len(requisitos_vetoriais) / len(requisitos_lista) * 100, 2) if requisitos_lista else 0
-
     # 3. Decisão final
-    resultado = "APTO" if score_emb > 10 and score_vetorial > 50 else "NÃO APTO"
+    resultado = "APTO" if score_emb > 10 else "NÃO APTO"
 
     # 4. Log no MLflow
     with mlflow.start_run(run_name=f"Entrevista_{nome}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"):
@@ -199,7 +182,6 @@ def avaliar_entrevista():
         mlflow.log_param("resultado", resultado)
         mlflow.log_param("competencias", competencias_full)
         mlflow.log_metric("compatibilidade_tecnica", score_emb)
-        mlflow.log_metric("score_vetorial", score_vetorial)
         mlflow.log_text("\n".join(perguntas), "perguntas_geradas.txt")
         mlflow.log_text("\n".join([f"Q: {q}\nA: {r}" for q, r in zip(perguntas, respostas)]), "respostas_candidato.txt")
         mlflow.log_text(respostas_texto, "respostas_processadas.txt")
@@ -213,10 +195,6 @@ def avaliar_entrevista():
         "titulo_vaga": titulo_vaga,
         "resultado": resultado,
         "score_compatibilidade_semantica": score_emb,
-        "score_compatibilidade_vetorial": score_vetorial,
-        "requisitos_mais_compatíveis": mais_compativeis,
-        "requisitos_menos_compatíveis": menos_compativeis,
-        "requisitos_vetoriais_relevantes": requisitos_vetoriais
     })
 
 if __name__ == '__main__':

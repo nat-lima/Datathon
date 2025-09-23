@@ -8,15 +8,11 @@ def client():
     return flask_app.test_client()
 
 @patch("app.mlflow.start_run")
-@patch("app.buscar_similaridade")
-@patch("app.criar_vector_store")
 @patch("app.calcular_compatibilidade_emb")
 @patch("app.montar_df_entrevista")
 def test_avaliar_entrevista_ok(
     mock_montar_df,
     mock_calcular,
-    mock_vector_store,
-    mock_buscar,
     mock_mlflow,
     client
 ):
@@ -41,14 +37,6 @@ def test_avaliar_entrevista_ok(
         "scores_individuais": []
     }
 
-    # Simula FAISS com 3 requisitos vetoriais (75% de 4)
-    mock_vector_store.return_value = "store"
-    mock_buscar.return_value = [
-        MagicMock(page_content="Python"),
-        MagicMock(page_content="Comunicação"),
-        MagicMock(page_content="Trabalho em equipe")
-    ]
-
     # Simula mlflow
     mock_mlflow.return_value.__enter__.return_value = MagicMock()
 
@@ -69,7 +57,3 @@ def test_avaliar_entrevista_ok(
     assert data["titulo_vaga"] == "Dev Backend"
     assert data["resultado"] == "APTO"
     assert data["score_compatibilidade_semantica"] == 75.0
-    assert data["score_compatibilidade_vetorial"] == 75.0
-    assert "Python" in data["requisitos_mais_compatíveis"]
-    assert "SQL" in data["requisitos_menos_compatíveis"]
-    assert "Trabalho em equipe" in data["requisitos_vetoriais_relevantes"]
