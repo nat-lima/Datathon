@@ -1,5 +1,5 @@
 # Datathon: 
-### API de Entrevistas com Processamento de ZIPs, Geração de Perguntas e Avaliação via MLflow
+### API de Entrevistas com Processamento de ZIPs, Geração de Perguntas, Avaliação e Monitoramento via MLflow
 
 Esta API em Flask processa arquivos ZIP contendo dados de candidatos e vagas, armazena-os em um banco SQLite, gera perguntas de entrevista usando **LangChain + OpenAI**, e avalia respostas registrando resultados no **MLflow**.
 
@@ -21,6 +21,8 @@ Esta API em Flask processa arquivos ZIP contendo dados de candidatos e vagas, ar
 ```bash
 
 DATATHON/
+|    └── .vscode
+|    |   └── settings.json
 |    └── app
 |    |   ├── dados/
 |    |   │   ├── applicants.zip
@@ -37,6 +39,16 @@ DATATHON/
 |    |   │   └── front.py
 |    |   ├── monitoring/
 |    |   │   └── drift_monitor.ipynb
+|    |   ├── tests/
+|    |   │   ├── __init__.py
+|    |   │   ├── test_avaliar_entrevista.py
+|    |   │   ├── test_compatibilidade_emb.py
+|    |   │   ├── test_db_path.py
+|    |   │   ├── test_extrair_json.py
+|    |   │   ├── test_extrair_zip.py
+|    |   │   ├── test_gerar_perguntas.py
+|    |   │   ├── test_rota_processar_zips.py
+|    |   │   └── test_validar_pasta.ipynb
 |    |   ├── utils/
 |    |   │   ├── __init__.py
 |    |   │   ├── calcular_compatibilidade_emb.py
@@ -54,6 +66,7 @@ DATATHON/
 |    |   ├── Docekrfile.streamlit
 |    |   ├── requirements.txt
 |    └── mlruns/
+|    └── .coverage
 |    └── .gitignore
 |    └── README.md
 └──
@@ -73,10 +86,6 @@ Versões superiores (como 3.12 ou 3.13) podem causar conflitos de dependência, 
 - Docker instalado
 - Docker Compose instalado
 
-### ⚠️ Compatibilidade com LangChain e Drift
-
-Este projeto usa `LangChain` com `pydantic 2.x`, portanto o monitoramento de drift foi implementado com `ml3-drift`, que é compatível com essa versão.  
-Evite usar `alibi-detect`, pois ele depende de `pydantic 1.x` e causa conflitos com LangChain.
 ---
 
 ## 🎯 Entrevista via Streamlit
@@ -107,10 +116,12 @@ Para rodar o projeto com Docker:
 ### 1. `Dockerfile`
 
 ```Dockerfile
-FROM python:3.12-slim
+FROM python:3.11
 WORKDIR /app
+COPY requirements.txt .
+RUN pip install --upgrade pip \
+    && pip install --no-cache-dir -r requirements.txt
 COPY . .
-RUN pip install --upgrade pip && pip install --no-cache-dir -r requirements.txt
 EXPOSE 5000
 CMD ["python", "app.py"]
 ```
@@ -119,11 +130,11 @@ CMD ["python", "app.py"]
 
 
 ```Yaml
-version: '3.12'
-
 services:
-  web:
-    build: .
+  web:  # Flask backend
+    build:
+      context: .
+      dockerfile: Dockerfile
     ports:
       - "5000:5000"
     volumes:
@@ -132,6 +143,23 @@ services:
     env_file:
       - .env
     command: python app.py
+    restart: always
+
+  streamlit:  # Streamlit frontend
+    build:
+      context: .
+      dockerfile: Dockerfile.streamlit
+    ports:
+      - "8501:8501"
+    volumes:
+      - .:/app
+    working_dir: /app
+    environment:
+      - API_URL=http://web:5000  # nome do serviço Flask
+    command: streamlit run frontend/front.py --server.port=8501 --server.address=0.0.0.0
+    depends_on:
+      - web
+    restart: always
 ```
 
 ### 3. `Rodar o projeto`
@@ -164,6 +192,7 @@ Certificar que está rodando dentro do diretório \app.
 4. **Configurar variáveis de ambiente: Crie um arquivo .env na raiz com**:
   ```bash
     OPENAI_API_KEY=sua_chave_openai_aqui
+    API_URL=http://localhost:5000
   ```
 
 ---
@@ -301,6 +330,12 @@ mlflow ui
 
 
 Acesse: http://127.0.0.1:5000
+
+---
+
+🔐 Proteção de Dados Pessoais
+Para garantir a privacidade e segurança dos dados dos candidatos, esta aplicação foi cuidadosamente projetada para isolar as informações de cada pessoa entrevistada.
+A função montar_df_entrevista realiza consultas específicas no banco de dados utilizando o e-mail do candidato como chave única, assegurando que apenas os dados daquele indivíduo sejam carregados e processados. Isso evita qualquer risco de vazamento ou exposição indevida de informações de terceiros. Além disso, o link de acesso à entrevista é enviado diretamente por e-mail ao candidato, garantindo que somente ele tenha acesso à sua própria avaliação.
 
 ---
 
