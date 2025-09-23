@@ -1,0 +1,2 @@
+Q: Qual sua experiência com Python?
+A: Tenho 5 anos de experiência com Python.

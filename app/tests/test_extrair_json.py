@@ -1,20 +1,50 @@
 import json
-from app import processar_json
+import pandas as pd
+import os
+from utils.flatten_json import flatten_json
 
-def test_processar_json_valido(tmp_path):
-    dados = {"nome": "Viviana", "idade": 32}
-    caminho = tmp_path / "dados.json"
-    with open(caminho, "w") as f:
-        json.dump(dados, f)
+def test_flatten_json_simples():
+    entrada = {"nome": "Viviana", "idade": 32}
+    resultado = flatten_json(entrada)
+    assert resultado == {"nome": "Viviana", "idade": 32}
 
-    df = processar_json(str(caminho), "funcionarios")
-    assert df is not None
-    assert "nome" in df.columns
-    assert df.iloc[0]["nome"] == "Viviana"
+def test_flatten_json_aninhado():
+    entrada = {
+        "usuario": {
+            "nome": "Viviana",
+            "endereco": {
+                "cidade": "São Paulo",
+                "cep": "01234-567"
+            }
+        },
+        "ativo": True
+    }
+    resultado = flatten_json(entrada)
+    esperado = {
+        "usuario_nome": "Viviana",
+        "usuario_endereco_cidade": "São Paulo",
+        "usuario_endereco_cep": "01234-567",
+        "ativo": True
+    }
+    assert resultado == esperado
 
-def test_processar_json_invalido(tmp_path):
-    caminho = tmp_path / "dados.json"
-    caminho.write_text("isso não é JSON válido")
+def test_flatten_json_com_lista():
+    entrada = {
+        "nome": "Viviana",
+        "habilidades": ["Python", "SQL"]
+    }
+    resultado = flatten_json(entrada)
+    assert resultado == {
+        "nome": "Viviana",
+        "habilidades": ["Python", "SQL"]
+    }
 
-    df = processar_json(str(caminho), "funcionarios")
-    assert df is None
+def test_flatten_json_vazio():
+    entrada = {}
+    resultado = flatten_json(entrada)
+    assert resultado == {}
+
+def test_flatten_json_custom_sep():
+    entrada = {"a": {"b": {"c": 1}}}
+    resultado = flatten_json(entrada, sep=".")
+    assert resultado == {"a.b.c": 1}

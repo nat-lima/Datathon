@@ -1,9 +1,9 @@
 import pytest
 from unittest.mock import patch, MagicMock
-from test_gerar_perguntas import gerar_perguntas_para_vaga
+from utils.gerar_perguntas_para_vaga import gerar_perguntas_para_vaga
 
-@patch("gerar_perguntas_para_vaga.ChatOpenAI")
-@patch("gerar_perguntas_para_vaga.LLMChain")
+@patch("utils.gerar_perguntas_para_vaga.ChatOpenAI")
+@patch("utils.gerar_perguntas_para_vaga.LLMChain")
 def test_gerar_perguntas_mockado(mock_llmchain, mock_chatopenai):
     mock_chain_instance = MagicMock()
     mock_chain_instance.run.return_value = """Quais são suas principais habilidades técnicas?
