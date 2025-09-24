@@ -81,12 +81,5 @@ if st.session_state.fase == "entrevista":
         if response.status_code == 200:
             st.success(f"✅ Resultado: {resultado['resultado']}")
             st.metric("Score compatibilidade semântica", resultado["score_compatibilidade_semantica"])
-            st.metric("Score compatibilidade vetorial", resultado["score_compatibilidade_vetorial"])
-            st.write("✅ Requisitos mais compatíveis:")
-            st.write(resultado["requisitos_mais_compatíveis"])
-            st.write("⚠️ Requisitos menos compatíveis:")
-            st.write(resultado["requisitos_menos_compatíveis"])
-            st.write("🔍 Requisitos vetoriais relevantes:")
-            st.write(resultado["requisitos_vetoriais_relevantes"])
         else:
             st.error(resultado.get("erro", "Erro ao avaliar entrevista"))
