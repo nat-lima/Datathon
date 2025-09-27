@@ -79,7 +79,7 @@ if st.session_state.fase == "entrevista":
         resultado = response.json()
 
         if response.status_code == 200:
-            st.success(f"✅ Resultado: {resultado['resultado']}")
+            st.success(f"Resultado: {resultado['resultado']}")
             st.metric("Score compatibilidade semântica", resultado["score_compatibilidade_semantica"])
         else:
             st.error(resultado.get("erro", "Erro ao avaliar entrevista"))
