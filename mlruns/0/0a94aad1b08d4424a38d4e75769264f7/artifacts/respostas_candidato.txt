@@ -1,0 +1,10 @@
+Q: Quais são suas experiências anteriores utilizando o Microsoft Excel?
+A: Fiz diversos cursos de excel, sou super avançada.
+Q: Você já trabalhou com a criação de planilhas complexas no Excel?
+A: Em planilhas para controles financeiros, mas não sei usar macros.
+Q: Como você costuma utilizar fórmulas e funções no Excel em sua rotina de trabalho?
+A: Para construir um controle de entradas e saidas, tipo fluxo financiero.
+Q: Qual é o maior desafio que você já enfrentou ao utilizar o Excel e como você resolveu?
+A: Crio graficos e tabelas, mas o excel serve mais como banco de dados.
+Q: Como você se mantém atualizado em relação às novas funcionalidades e atualizações do Microsoft Excel?
+A: Sim sou certificada Microsoft.

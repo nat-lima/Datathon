@@ -3,6 +3,10 @@
 
 Esta API em Flask processa arquivos ZIP contendo dados de candidatos e vagas, armazena-os em um banco SQLite, gera perguntas de entrevista usando **LangChain + OpenAI**, e avalia respostas registrando resultados no **MLflow**.
 
+Link para o video explicativo:
+
+https://drive.google.com/file/d/1ieoQ5r0HfCMd0hCqQebGPU0yP3a9sqsP/view?usp=sharing
+
 ---
 
 ## 🚀 Funcionalidades
