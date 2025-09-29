@@ -7,6 +7,10 @@ Link para o video explicativo:
 
 https://drive.google.com/file/d/1ieoQ5r0HfCMd0hCqQebGPU0yP3a9sqsP/view?usp=sharing
 
+Link para o video pitch:
+
+https://drive.google.com/file/d/1xDxY6ggJDZf2DRYpq19Te-LBxyi-naoO/view?usp=drive_link
+
 ---
 
 ## 🚀 Funcionalidades
